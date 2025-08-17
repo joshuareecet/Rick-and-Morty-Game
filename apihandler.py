@@ -6,7 +6,8 @@ Functions:
   getDictionaries(str) -> dict
   storeDictionaries(dict, dict, dict) -> .JSON, .JSON, .JSON
   readDictionaries(.JSON, .JSON, .JSON) -> dict, dict, dict
-
+  requestJSON(str) -> expected dict
+  
 Misc variables:
 
   None
@@ -22,6 +23,12 @@ import json
 
 #Functions:
 
+def requestJson(url: str):
+  output = requests.get(url)
+  output.raise_for_status()
+  output = output.json()
+  return output
+
 def getAllPages(api_endpoint: str):
   """
   Function to get all the pages from a given API endpoint. Called by the getDictionaries function.
@@ -31,13 +38,13 @@ def getAllPages(api_endpoint: str):
     api_dict (dict): A dictionary containing all pages of results.
   """
   #initialise the dictionary returned from the api
-  api_dict = requests.get(api_endpoint).json()
+  api_dict = requestJson(api_endpoint)
   
   #loop over the number of pages returned by the api
   maxpages = int(api_dict['info']['pages'])
   for page_num in range(2,maxpages,1):
     nextpageurl = api_endpoint+"/?page="+str(page_num)
-    nextpage = requests.get(nextpageurl).json()
+    nextpage = requestJson(nextpageurl)
     #the extend method adds all the items from the list individually rather than as one item
     api_dict['results'].extend(nextpage['results'])
   
@@ -54,7 +61,7 @@ def getDictionaries(url: str):
     episodes_dict (dict): A dictionary containing all episodes.
   """
   #base dictionary contains links to characters, locations and episodes  
-  base_dict = requests.get(url).json()
+  base_dict = requestJson(url)
 
   #getting characters
   characters_url = str(base_dict['characters'])
